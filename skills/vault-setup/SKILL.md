@@ -1,214 +1,125 @@
 ---
 name: vault-setup
-description: Interactive Obsidian vault configurator. Two rounds of 4 questions, shows a vault preview for confirmation, then builds the vault structure directly using the Obsidian CLI — no manual folder selection needed.
+description: Interactive Obsidian vault configurator. Asks the user to describe themselves in free text, then builds a personalized vault structure, CLAUDE.md, and slash commands directly in the current directory.
 ---
 
-# Vault Setup — Interactive Obsidian Configurator
+# Vault Setup — Obsidian Configurator
 
-Run from INSIDE the Obsidian vault folder (or any folder you want to become the vault).
+Run from INSIDE the folder you want to become your Obsidian vault.
 
-**TWO AskUserQuestion calls (4 tabs each), then a confirmation, then build.**
+## STEP 1 — One question, free text
 
----
-
-## ROUND 1 — Who you are (4 questions, one call)
-
-```
-AskUserQuestion([
-  {
-    question: "What best describes how you primarily use a computer for work?",
-    header: "Your role",
-    options: [
-      { label: "Business Owner", description: "Running a team or company — decisions, operations, growth" },
-      { label: "Developer / Builder", description: "Writing code, shipping products, building tools" },
-      { label: "Consultant / Freelancer", description: "Client work, project delivery, multiple relationships" },
-      { label: "Creator / Podcaster", description: "Making content — videos, newsletters, podcasts" }
-    ]
-  },
-  {
-    question: "What consumes most of your mental bandwidth right now?",
-    header: "Bandwidth",
-    options: [
-      { label: "Team & people", description: "Hiring, managing, keeping everyone aligned" },
-      { label: "Clients & revenue", description: "Pipeline, relationships, deals, delivery" },
-      { label: "Projects & execution", description: "Shipping things, hitting deadlines, tracking progress" },
-      { label: "Ideas & strategy", description: "Figuring out what to do next, research, planning" }
-    ]
-  },
-  {
-    question: "How do you prefer to capture notes and ideas?",
-    header: "Capture style",
-    options: [
-      { label: "Daily brain dumps", description: "Write everything to a daily note and sort later" },
-      { label: "Straight into folders", description: "Each note goes directly where it belongs" },
-      { label: "Voice or transcripts", description: "I dictate or paste transcripts, want Claude to clean and file them" },
-      { label: "No system yet", description: "That's exactly why I'm here" }
-    ]
-  },
-  {
-    question: "Work only, or personal life too?",
-    header: "Scope",
-    options: [
-      { label: "Work only", description: "Business, clients, projects — keep it professional" },
-      { label: "Work + personal goals", description: "Include priorities and things outside work too" },
-      { label: "Full life OS", description: "One place for everything — work, personal, health, finance, ideas" },
-      { label: "Start work, add later", description: "Work first, expand when ready" }
-    ]
-  }
-])
-```
+Display this message exactly, then wait for their response:
 
 ---
 
-## ROUND 2 — What you need (4 questions, one call)
+**Tell me about yourself in a few sentences so I can build your vault.**
 
-```
-AskUserQuestion([
-  {
-    question: "What's fallen through the cracks most in your work?",
-    header: "Biggest pain",
-    options: [
-      { label: "People & follow-ups", description: "Things I said I'd do with team or clients that got forgotten" },
-      { label: "Decisions & reasoning", description: "I make decisions but lose the context and why behind them" },
-      { label: "Ideas & opportunities", description: "Good ideas I had but never acted on" },
-      { label: "Projects & deadlines", description: "Things in progress that stall because I lost track" }
-    ]
-  },
-  {
-    question: "Do you have existing files to import?",
-    header: "Existing files",
-    options: [
-      { label: "Yes — a lot", description: "PDFs, Word docs, slides, old notes — years of stuff" },
-      { label: "Yes — a handful", description: "A few key files to start with" },
-      { label: "Starting fresh", description: "No existing files — building from zero" },
-      { label: "Not sure yet", description: "I'll figure this out later" }
-    ]
-  },
-  {
-    question: "How often do you make decisions you'd want to reference later?",
-    header: "Decisions",
-    options: [
-      { label: "Daily — constantly", description: "I'm deciding things all day and need to track the reasoning" },
-      { label: "Weekly — meaningful ones", description: "A handful of significant decisions per week" },
-      { label: "Rarely — only big ones", description: "Only major or irreversible decisions need capturing" },
-      { label: "Never tracked before", description: "Open to starting — just haven't done it" }
-    ]
-  },
-  {
-    question: "What do you most want Claude Code to do in this vault?",
-    header: "Daily goal",
-    options: [
-      { label: "Faster decisions", description: "Surface the right context so I can decide quickly" },
-      { label: "Track everything", description: "Nothing falls through — people, projects, commitments" },
-      { label: "Write in my voice", description: "Use my past notes to match my tone when drafting" },
-      { label: "All of the above", description: "I want the full compounding system" }
-    ]
-  }
-])
-```
+Answer these in whatever order feels natural:
+
+- What do you do for work?
+- What falls through the cracks most — what do you wish you tracked better?
+- Work only, or personal life too?
+- Do you have existing files to import? (PDFs, docs, slides)
+
+No need to be formal. A few sentences is enough.
 
 ---
 
-## PREVIEW — Show the proposed vault before building
+## STEP 2 — Infer and preview, don't ask more questions
 
-After both rounds, show the proposed structure as a formatted preview. Do NOT create anything yet.
+From their free-text answer, infer:
+- Their role (business owner / developer / consultant / creator / student)
+- Their primary pain point
+- Scope (work only / work + personal / full life OS)
+- Whether they have existing files
 
-Output exactly this format:
+Then show a vault preview. Do NOT ask clarifying questions. Make smart inferences.
 
 ```
 Here's your vault — ready to build when you are.
 
-📁 [vault name based on current directory]
+📁 [current directory name]
 ├── inbox/          Drop zone — everything new lands here first
-├── daily/          Daily brain dumps and quick captures  
-├── [role folder 1]/  [one line purpose]
-├── [role folder 2]/  [one line purpose]
-├── [role folder 3]/  [one line purpose]
+├── daily/          Daily brain dumps and quick captures
+├── [folder]/       [purpose based on their role]
+├── [folder]/       [purpose based on their role]
+├── [folder]/       [purpose based on their role]
 ├── projects/       Active work with status and next actions
-├── archive/        Completed work — never deleted, just moved
-└── scripts/        File processing tools
+└── archive/        Completed work — never deleted, just moved
 
-Slash commands that will be installed:
+Slash commands:
   /daily    — start your day with vault context
   /tldr     — save any session to the right folder
-  /[role]   — [role-specific command description]
+  /[role]   — [role-specific one-liner]
 
-vault-context.md will be written here — Claude reads it every session
-to know who you are. No re-explaining yourself ever again.
-
-Type "build it" to create this now, or tell me what to change.
+Type "build it" to create this, or tell me what to change.
 ```
 
-Wait for the user to confirm ("build it", "yes", "go", "looks good", etc.) or request changes.
-If they request changes, adjust the structure and show the preview again.
+Wait for confirmation before building anything.
 
----
+## STEP 3 — Build after confirmation
 
-## BUILD — Only after confirmation
+Once they say "build it", "yes", "go", "looks good", or similar:
 
-### Step 1: Create folder structure via bash
-
+### Create folders
 ```bash
-mkdir -p inbox daily [role-specific folders] projects archive scripts \
+mkdir -p inbox daily [role folders] projects archive scripts \
   .claude/skills/daily .claude/skills/tldr .claude/skills/[role-command]
 ```
 
-Role-specific folders:
+Role folder sets:
 - Business Owner → `people/ operations/ decisions/`
 - Developer → `research/ clients/`
 - Consultant → `clients/ research/`
 - Creator → `content/ research/ clients/`
+- Student → `notes/ research/`
 
-If scope includes personal → also `personal/` and `goals/`
+If personal scope → also `personal/`
 
-### Step 2: Open the vault in Obsidian via CLI
-
+### Open in Obsidian
 ```bash
 open -a Obsidian "$(pwd)"
 ```
 
-This opens the current folder directly as an Obsidian vault. No manual folder selection.
-
-### Step 3: Write vault-context.md
+### Write CLAUDE.md
+Write directly to `CLAUDE.md` in the current directory:
 
 ```markdown
-# About Me
+# CLAUDE.md — [inferred role]'s Second Brain
 
-[2 sentences — role, what matters most, what they're optimizing for]
+## Who I Am
+[2-3 sentences based on what they told you — specific, personal, written in first person as Claude describing its owner]
 
-# My Vault Structure
+## My Vault Structure
+[folder tree with one-line purpose per folder]
 
-[Actual folder tree, one-line purpose per folder]
+## How I Work
+[3-4 bullet points inferred from their answers — capture style, main pain point, scope, what they want from AI]
 
-# How I Work
-
-- Capture style: [from answer]
-- Biggest pain point: [from answer]  
-- Decision frequency: [from answer]
-- Scope: [work only / work + personal / full life OS]
-
-# Context Rules
-
-When I mention a decision → check decisions/ for related past decisions first
-When I mention a person, client, or project → look in [relevant folder] first
-When I ask you to write something → read recent daily/ notes to match my voice
-When I drop a file in inbox/ → ask if I want it sorted now or later
+## Context Rules
+When I mention a decision → check [decisions or relevant folder] first
+When I mention a person/client/project → look in [relevant folder]
+When I ask you to write → read recent daily/ notes to match my voice
+When something lands in inbox/ → ask if I want it sorted now
 ```
 
-### Step 4: Write skill files
+### Write skill files
 
-**`.claude/skills/daily/SKILL.md`** — read today's note or create one, check inbox/, surface top 3 priorities, ask "What are we working on?"
+**`.claude/skills/daily/SKILL.md`:**
+Read today's daily note or create one. Check inbox/ for unprocessed files. Surface top 3 priorities. Ask: "What are we working on today?"
 
-**`.claude/skills/tldr/SKILL.md`** — summarize conversation, save to right folder, update memory.md
+**`.claude/skills/tldr/SKILL.md`:**
+Summarize this conversation: decisions, things to remember, next actions. Save to the most relevant folder. Update memory.md.
 
-Role-specific:
-- Business Owner → `.claude/skills/standup/SKILL.md`
-- Developer → `.claude/skills/project/SKILL.md`
-- Consultant → `.claude/skills/client/SKILL.md`
-- Creator → `.claude/skills/content/SKILL.md`
+**Role-specific skill:**
+- Business Owner → `.claude/skills/standup/SKILL.md` — briefing across projects, decisions, people
+- Developer → `.claude/skills/project/SKILL.md` — load a project's full context
+- Consultant → `.claude/skills/client/SKILL.md` — load a client's full context
+- Creator → `.claude/skills/content/SKILL.md` — read content folder, calibrate voice, develop idea
+- Student → `.claude/skills/research/SKILL.md` — pull all notes on a topic, synthesize
 
-### Step 5: Write memory.md
-
+### Write memory.md
 ```markdown
 # Memory
 
@@ -219,20 +130,35 @@ Role-specific:
 [Added as Claude learns them]
 ```
 
-### Step 6: Final output — clean and short
+## STEP 4 — Context injection question
+
+After building, ask:
+
+```
+One last thing — how do you want your vault context loaded into Claude Code?
+
+1. Global (recommended) — adds one line to ~/.claude/CLAUDE.md so your vault 
+   context loads automatically in every Claude Code session on this machine
+2. Manual — I'll give you the line to paste into specific projects when you need it
+3. Vault only — works automatically when you run claude from inside this folder
+```
+
+**If global:** Append to `~/.claude/CLAUDE.md` (create if needed):
+```
+## My Personal Context
+At the start of every session, read [absolute vault path]/CLAUDE.md for context about who I am, my work, and my conventions.
+```
+
+## STEP 5 — Final output
 
 ```
 Done. Your vault is live in Obsidian.
 
-One thing left: Settings → General → Enable Command Line Interface
-(This lets other tools and scripts talk to Obsidian directly.)
+One manual step left:
+  Obsidian → Settings → General → Enable Command Line Interface
 
-Add this to any project's CLAUDE.md to pull in your vault context:
-
-  At the start of every session, read [absolute path]/vault-context.md
-
-Your slash commands work now:
-  /daily    — run this first thing tomorrow morning
+Your slash commands:
+  /daily    — run this tomorrow morning
   /tldr     — run this at the end of any session
   /[role]   — [one liner]
 
@@ -240,65 +166,3 @@ Have files to import?
   python scripts/process_docs_to_obsidian.py ~/your-files inbox/
   Then: "Sort everything in inbox/ into the right folders"
 ```
-
----
-
-## STEP 7 — Context injection (after vault is built)
-
-After everything is created, ask this ONE final question:
-
-```
-AskUserQuestion([
-  {
-    question: "How do you want your vault context loaded into Claude Code sessions?",
-    header: "Context scope",
-    options: [
-      {
-        label: "Global — every session",
-        description: "Adds one line to ~/.claude/CLAUDE.md so Claude loads your vault context automatically in every Claude Code session on this machine, no matter which folder you open it from."
-      },
-      {
-        label: "Project-level — I'll choose",
-        description: "I'll give you the one line to paste into specific projects when you want your vault context available there."
-      },
-      {
-        label: "Just the vault for now",
-        description: "Claude already reads your CLAUDE.md when you run it from inside your vault. Keep it simple for now."
-      }
-    ]
-  }
-])
-```
-
-### If "Global — every session":
-
-Append this to `~/.claude/CLAUDE.md` (create the file if it doesn't exist):
-
-```markdown
-
-## My Personal Vault Context
-At the start of every session, read [absolute path to vault]/CLAUDE.md for
-context about who I am, my projects, my conventions, and how I work.
-```
-
-Confirm: "Done — your vault context will load automatically in every Claude Code session."
-
-### If "Project-level — I'll choose":
-
-Output:
-```
-When you want your vault context in a specific project, add this to that project's CLAUDE.md:
-
-  At the start of every session, read [absolute path to vault]/CLAUDE.md
-
-That's it. Claude will load your personal context automatically for that project.
-```
-
-### If "Just the vault for now":
-
-Output:
-```
-No problem. Run Claude Code from inside your vault folder and it loads automatically.
-  cd [vault path] && claude
-```
-
