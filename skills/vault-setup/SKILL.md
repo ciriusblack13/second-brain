@@ -1,17 +1,17 @@
 ---
 name: vault-setup
-description: Interactive Obsidian vault configurator. Asks ALL questions in ONE single AskUserQuestion call (4 tabs simultaneously), then creates the vault structure and vault-context.md.
+description: Interactive Obsidian vault configurator. Two rounds of 4 questions each (8 total), then creates vault structure and vault-context.md.
 ---
 
 # Vault Setup — Interactive Obsidian Configurator
 
-Run this from INSIDE the Obsidian vault folder.
+Run from INSIDE the Obsidian vault folder.
 
-**CRITICAL: Fire ONE single AskUserQuestion call with ALL 4 questions at once. Do not split into multiple calls. The user sees all 4 as tabs simultaneously.**
+**CRITICAL: Exactly TWO AskUserQuestion calls. Each call has exactly 4 questions shown as tabs. Never more, never fewer calls.**
 
 ---
 
-## THE ONE CALL — 4 questions, all at once
+## ROUND 1 — Who you are (4 questions, one call)
 
 ```
 AskUserQuestion([
@@ -26,33 +26,33 @@ AskUserQuestion([
     ]
   },
   {
-    question: "What's fallen through the cracks most in your work?",
-    header: "Biggest pain",
+    question: "What consumes most of your mental bandwidth right now?",
+    header: "Bandwidth",
     options: [
-      { label: "People & follow-ups", description: "Things I said I'd do, hiring pipeline, 1:1 notes" },
-      { label: "Client commitments", description: "Deliverables, deadlines, things I promised" },
-      { label: "My own decisions", description: "I make decisions but lose the reasoning behind them" },
-      { label: "Ideas & opportunities", description: "Good ideas I forgot to act on" }
+      { label: "Team & people", description: "Hiring, managing, keeping everyone aligned" },
+      { label: "Clients & revenue", description: "Pipeline, relationships, deals, delivery" },
+      { label: "Projects & execution", description: "Shipping things, hitting deadlines, tracking progress" },
+      { label: "Ideas & strategy", description: "Figuring out what to do next, research, planning" }
     ]
   },
   {
-    question: "Do you have existing files to import?",
-    header: "Existing files",
+    question: "How do you prefer to capture notes and ideas?",
+    header: "Capture style",
     options: [
-      { label: "Yes — a lot", description: "PDFs, Word docs, slides — years of stuff to bring in" },
-      { label: "Yes — a handful", description: "A few files to start with" },
-      { label: "Starting fresh", description: "No existing files — building from zero" },
-      { label: "Not sure yet", description: "I'll decide later" }
+      { label: "Daily brain dumps", description: "Write everything to a daily note and sort later" },
+      { label: "Straight into folders", description: "Each note goes directly where it belongs" },
+      { label: "Voice or transcripts", description: "I dictate or paste transcripts, want Claude to clean and file them" },
+      { label: "No system yet", description: "That's exactly why I'm here" }
     ]
   },
   {
     question: "Work only, or personal life too?",
     header: "Scope",
     options: [
-      { label: "Work only", description: "Business, projects, clients — keep it professional" },
-      { label: "Work + personal goals", description: "Include priorities and things outside work too" },
-      { label: "Full life OS", description: "One place for everything — work, personal, health, ideas" },
-      { label: "Start work, expand later", description: "Work first, add personal when ready" }
+      { label: "Work only", description: "Business, clients, projects — keep it professional" },
+      { label: "Work + personal goals", description: "Include priorities and things I'm working on outside work too" },
+      { label: "Full life OS", description: "One place for everything — work, personal, health, finance, ideas" },
+      { label: "Start work, add later", description: "Work first, expand when I'm ready" }
     ]
   }
 ])
@@ -60,57 +60,100 @@ AskUserQuestion([
 
 ---
 
-## GENERATION — After the one call
+## ROUND 2 — What you need (4 questions, one call)
+
+```
+AskUserQuestion([
+  {
+    question: "What's fallen through the cracks most in your work?",
+    header: "Biggest pain",
+    options: [
+      { label: "People & follow-ups", description: "Things I said I'd do with team or clients that got forgotten" },
+      { label: "Decisions & reasoning", description: "I make decisions but lose the context and why behind them" },
+      { label: "Ideas & opportunities", description: "Good ideas I had but never acted on because I forgot them" },
+      { label: "Projects & deadlines", description: "Things in progress that stall because I lost track" }
+    ]
+  },
+  {
+    question: "Do you have existing files to import into your vault?",
+    header: "Existing files",
+    options: [
+      { label: "Yes — a lot", description: "PDFs, Word docs, slides, old notes — years of stuff" },
+      { label: "Yes — a handful", description: "A few key files to start with" },
+      { label: "Starting fresh", description: "No existing files — building from zero" },
+      { label: "Not sure yet", description: "I'll figure this out later" }
+    ]
+  },
+  {
+    question: "How often do you make decisions you'd want to reference later?",
+    header: "Decisions",
+    options: [
+      { label: "Daily — constantly", description: "I'm deciding things all day and need to track the reasoning" },
+      { label: "Weekly — meaningful ones", description: "A handful of significant decisions per week" },
+      { label: "Rarely — only big ones", description: "Only major or irreversible decisions need capturing" },
+      { label: "Never tracked before", description: "Open to starting — just haven't done it" }
+    ]
+  },
+  {
+    question: "What do you most want Claude Code to do in this vault day-to-day?",
+    header: "Daily goal",
+    options: [
+      { label: "Faster decisions", description: "Surface the right context so I can decide quickly and move on" },
+      { label: "Track everything", description: "Nothing falls through — people, projects, commitments, ideas" },
+      { label: "Write in my voice", description: "Use my past notes to match my tone when drafting anything" },
+      { label: "All of the above", description: "I want the full compounding system" }
+    ]
+  }
+])
+```
+
+---
+
+## GENERATION — After both rounds
 
 ### Step 1: Create folder structure
 
-Based on role, run one bash mkdir:
-
+Based on role:
 - Business Owner → `mkdir -p inbox daily people operations decisions projects archive scripts .claude/skills/daily .claude/skills/tldr .claude/skills/standup`
 - Developer → `mkdir -p inbox daily projects research clients archive scripts .claude/skills/daily .claude/skills/tldr .claude/skills/project`
 - Consultant → `mkdir -p inbox daily clients projects research archive scripts .claude/skills/daily .claude/skills/tldr .claude/skills/client`
 - Creator → `mkdir -p inbox daily content research clients archive scripts .claude/skills/daily .claude/skills/tldr .claude/skills/content`
 
-If scope includes personal, also add: `personal/` and `goals/`
+If scope includes personal/full life OS, also: `mkdir -p personal goals`
 
 ### Step 2: Write vault-context.md
-
-Write `vault-context.md` to the current directory based on ALL their answers:
 
 ```markdown
 # About Me
 
-[2 sentences: role, what they do, what matters most to them]
+[2 sentences — role, what matters most, what they're optimizing for]
 
 # My Vault Structure
 
-[Folder tree with one-line purpose per folder — actual folders just created]
+[Actual folder tree just created, one-line purpose per folder]
 
 # How I Work
 
-- I capture ideas by: [infer from role + pain point]
-- My biggest pain point is: [from answer]
+- Capture style: [from answer]
+- Biggest pain point: [from answer]
+- Decision frequency: [from answer]
 - Scope: [work only / work + personal / full life OS]
 
 # Context Rules
 
 When I mention a decision → check decisions/ for related past decisions first
-When I mention a person or client → look in [people/ or clients/] for their context
+When I mention a person, client, or project → look in [relevant folder] for their context
 When I ask you to write something → read recent daily/ notes to match my voice
-When I drop a file in inbox/ → ask me if I want it sorted now
+When I drop something in inbox/ → ask if I want it sorted now or later
 ```
 
 ### Step 3: Write skill files
 
-Write directly to `.claude/skills/`:
+**`.claude/skills/daily/SKILL.md`** — read today's note or create one, check inbox, surface top 3 priorities, ask "What are we working on?"
 
-**`.claude/skills/daily/SKILL.md`:**
-Read today's daily note or create one. Check inbox/ for unprocessed files. Surface top 3 priorities. Ask: "What are we working on today?"
+**`.claude/skills/tldr/SKILL.md`** — summarize conversation, save to right folder, update memory.md
 
-**`.claude/skills/tldr/SKILL.md`:**
-Summarize this conversation: decisions made, things to remember, next actions. Save to the most relevant folder. Update memory.md.
-
-**Role-specific:**
+Role-specific third skill:
 - Business Owner → `.claude/skills/standup/SKILL.md`: briefing across projects, decisions, people
 - Developer → `.claude/skills/project/SKILL.md`: load a project's full context and status
 - Consultant → `.claude/skills/client/SKILL.md`: load a client's full context
@@ -136,16 +179,17 @@ Your vault is set up.
 [actual folder tree]
 
 vault-context.md is your vault's identity file — Claude reads it to know
-who you are, how you work, and where things live. No re-explaining yourself.
+who you are, how you work, and where things live. You never have to
+re-explain yourself.
 
-Add this to any project's CLAUDE.md to wire it up:
+Add this one line to any project's CLAUDE.md to wire it up:
 
   At the start of every session, read [absolute path]/vault-context.md
 
 Your slash commands:
   /daily      — start your day with vault context
   /tldr       — save any session to the right folder
-  /[role cmd] — [one line]
+  /[role cmd] — [one line description]
 
 Have files to import?
   python scripts/process_docs_to_obsidian.py ~/your-files inbox/
