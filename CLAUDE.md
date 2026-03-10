@@ -34,3 +34,4 @@ When writing anything:
 - /vault-setup  — Personalize this vault for your role
 - /daily        — Start the day with vault context
 - /tldr         — Save a summary of this session to the vault
+- /file-intel   — Process any folder of files through Gemini, get Obsidian-ready summaries
