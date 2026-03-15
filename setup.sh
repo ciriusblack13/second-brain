@@ -154,7 +154,16 @@ cp "$SCRIPT_DIR/skills/file-intel/SKILL.md"  "$VAULT_PATH/.claude/skills/file-in
 cp "$SCRIPT_DIR/scripts/process_docs_to_obsidian.py" "$VAULT_PATH/scripts/process_docs_to_obsidian.py"
 cp "$SCRIPT_DIR/scripts/process_files_with_gemini.py" "$VAULT_PATH/scripts/process_files_with_gemini.py"
 
+# Also install skills globally so they work in ANY folder, not just the vault
+mkdir -p "$HOME/.claude/skills/vault-setup" "$HOME/.claude/skills/daily" \
+         "$HOME/.claude/skills/tldr" "$HOME/.claude/skills/file-intel"
+cp "$SCRIPT_DIR/skills/vault-setup/SKILL.md" "$HOME/.claude/skills/vault-setup/SKILL.md"
+cp "$SCRIPT_DIR/skills/daily/SKILL.md"       "$HOME/.claude/skills/daily/SKILL.md"
+cp "$SCRIPT_DIR/skills/tldr/SKILL.md"        "$HOME/.claude/skills/tldr/SKILL.md"
+cp "$SCRIPT_DIR/skills/file-intel/SKILL.md"  "$HOME/.claude/skills/file-intel/SKILL.md"
+
 echo -e "  ${GREEN}✓${RESET} Vault created at $VAULT_PATH"
+echo -e "  ${GREEN}✓${RESET} Skills installed globally — work in any folder"
 
 # ─── STEP 7: API key ─────────────────────────────────────────────────────────
 echo ""
@@ -212,11 +221,13 @@ if [[ "$KEPANO_ANSWER" =~ ^[Yy] ]]; then
   if git clone --depth=1 https://github.com/kepano/obsidian-skills.git "$TEMP_DIR/obsidian-skills" &>/dev/null; then
     for skill_dir in "$TEMP_DIR/obsidian-skills/skills"/*/; do
       skill_name=$(basename "$skill_dir")
-      mkdir -p "$VAULT_PATH/.claude/skills/$skill_name"
+      # Install to vault AND globally
+      mkdir -p "$VAULT_PATH/.claude/skills/$skill_name" "$HOME/.claude/skills/$skill_name"
       cp "$skill_dir/SKILL.md" "$VAULT_PATH/.claude/skills/$skill_name/SKILL.md" 2>/dev/null || true
+      cp "$skill_dir/SKILL.md" "$HOME/.claude/skills/$skill_name/SKILL.md" 2>/dev/null || true
     done
     rm -rf "$TEMP_DIR"
-    echo -e "  ${GREEN}✓${RESET} Kepano's Obsidian skills installed"
+    echo -e "  ${GREEN}✓${RESET} Kepano's Obsidian skills installed (vault + global)"
   else
     rm -rf "$TEMP_DIR"
     echo -e "  ${ORANGE}⚠${RESET}  Couldn't reach GitHub. Install manually later:"
