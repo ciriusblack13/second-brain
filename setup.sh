@@ -8,6 +8,19 @@ set -e
 # SCRIPT_DIR must be defined first — used throughout
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# ── Self-bootstrap: if repo files are missing, clone them ────────────────────
+# This happens when the script is run via the one-liner curl command.
+# We clone the full repo into a temp dir and re-exec from there.
+if [ ! -f "$SCRIPT_DIR/CLAUDE.md" ]; then
+  echo "Downloading Second Brain repo..."
+  BOOTSTRAP_DIR="$(mktemp -d)"
+  if ! git clone --depth=1 https://github.com/earlyaidopters/second-brain.git "$BOOTSTRAP_DIR" &>/dev/null; then
+    echo "Error: Could not clone repo. Check your internet connection and try again."
+    exit 1
+  fi
+  exec bash "$BOOTSTRAP_DIR/setup.sh"
+fi
+
 PURPLE='\033[0;35m'
 ORANGE='\033[0;33m'
 GREEN='\033[0;32m'
@@ -105,10 +118,11 @@ fi
 echo ""
 echo -e "${WHITE}Step 4/7 — Installing Python dependencies${RESET}"
 if command -v python3 &>/dev/null; then
-  python3 -m venv "$SCRIPT_DIR/.venv" 2>/dev/null || true
-  "$SCRIPT_DIR/.venv/bin/pip" install -q -r "$SCRIPT_DIR/requirements.txt" \
+  VENV_DIR="$HOME/.second-brain-venv"
+  python3 -m venv "$VENV_DIR" 2>/dev/null || true
+  "$VENV_DIR/bin/pip" install -q -r "$SCRIPT_DIR/requirements.txt" \
     && echo -e "  ${GREEN}✓${RESET} Python packages installed" \
-    || echo -e "  ${ORANGE}⚠${RESET}  pip install failed — try manually: pip3 install -r requirements.txt"
+    || echo -e "  ${ORANGE}⚠${RESET}  pip install failed — try: pip3 install -r requirements.txt --break-system-packages"
 else
   echo -e "  ${ORANGE}⚠${RESET}  Python 3 not found. Install: brew install python3"
 fi
