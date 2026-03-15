@@ -152,26 +152,20 @@ def process_file(file_path: Path, client: genai.Client) -> str | None:
             pdf_bytes = read_pdf_bytes(file_path)
             contents = [
                 types.Part.from_bytes(data=pdf_bytes, mime_type="application/pdf"),
-                types.Part.from_text(prompt)
+                prompt
             ]
 
         elif suffix in {".pptx", ".ppt"}:
             text = read_pptx_text(file_path)
-            contents = [types.Part.from_text(
-                f"PRESENTATION CONTENT:\n\n{text}\n\n{prompt}"
-            )]
+            contents = [f"PRESENTATION CONTENT:\n\n{text}\n\n{prompt}"]
 
         elif suffix in {".docx", ".doc"}:
             text = read_docx_text(file_path)
-            contents = [types.Part.from_text(
-                f"DOCUMENT CONTENT:\n\n{text}\n\n{prompt}"
-            )]
+            contents = [f"DOCUMENT CONTENT:\n\n{text}\n\n{prompt}"]
 
         elif suffix in {".txt", ".md"}:
             text = read_text(file_path)
-            contents = [types.Part.from_text(
-                f"TEXT CONTENT:\n\n{text}\n\n{prompt}"
-            )]
+            contents = [f"TEXT CONTENT:\n\n{text}\n\n{prompt}"]
 
         else:
             return None
