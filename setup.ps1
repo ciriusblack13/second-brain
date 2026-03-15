@@ -3,12 +3,13 @@
 #  Run with: powershell -ExecutionPolicy Bypass -File setup.ps1
 # ─────────────────────────────────────────────────────────────────────────────
 
-$Purple = "`e[35m"
-$Green  = "`e[32m"
-$Orange = "`e[33m"
-$White  = "`e[1;37m"
-$Dim    = "`e[2m"
-$Reset  = "`e[0m"
+$Purple    = "`e[35m"
+$Green     = "`e[32m"
+$Orange    = "`e[33m"
+$White     = "`e[1;37m"
+$Dim       = "`e[2m"
+$Reset     = "`e[0m"
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 Clear-Host
 Write-Host ""
@@ -110,7 +111,6 @@ New-Item -ItemType Directory -Force -Path "$vaultPath\.claude\skills\daily" | Ou
 New-Item -ItemType Directory -Force -Path "$vaultPath\.claude\skills\tldr" | Out-Null
 New-Item -ItemType Directory -Force -Path "$vaultPath\scripts" | Out-Null
 
-$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 New-Item -ItemType Directory -Force -Path "$vaultPath\.claude\skills\file-intel" | Out-Null
 
 Copy-Item "$scriptDir\CLAUDE.md"   "$vaultPath\CLAUDE.md"   -Force
@@ -188,6 +188,37 @@ if ($kepanoAnswer -match "^[Yy]") {
     }
 } else {
     Write-Host "  ${Dim}  Skipped - install anytime: https://github.com/kepano/obsidian-skills${Reset}"
+}
+
+# ─── VERIFICATION ────────────────────────────────────────────────────────────
+Write-Host ""
+Write-Host "  ${White}Checking installation...${Reset}"
+Write-Host ""
+
+$obsCheck = winget list --id Obsidian.Obsidian 2>$null
+if ($obsCheck) {
+    Write-Host "  ${Green}✓${Reset} Obsidian"
+} else {
+    Write-Host "  ${Orange}✗${Reset} Obsidian — run: winget install Obsidian.Obsidian"
+}
+
+if (Get-Command claude -ErrorAction SilentlyContinue) {
+    Write-Host "  ${Green}✓${Reset} Claude Code"
+} else {
+    Write-Host "  ${Orange}✗${Reset} Claude Code not in PATH — close and reopen this terminal"
+}
+
+if (Get-Command python -ErrorAction SilentlyContinue) {
+    $pyVer = python --version 2>&1
+    Write-Host "  ${Green}✓${Reset} $pyVer"
+} else {
+    Write-Host "  ${Orange}✗${Reset} Python not found — install from python.org (tick 'Add to PATH')"
+}
+
+if (Test-Path "$vaultPath\CLAUDE.md") {
+    Write-Host "  ${Green}✓${Reset} Vault  $vaultPath"
+} else {
+    Write-Host "  ${Orange}✗${Reset} Vault files missing at $vaultPath"
 }
 
 # Done

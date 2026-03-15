@@ -212,6 +212,35 @@ else
   echo -e "  ${DIM}  Skipped — install anytime: https://github.com/kepano/obsidian-skills${RESET}"
 fi
 
+# ─── VERIFICATION ────────────────────────────────────────────────────────────
+echo ""
+echo -e "  ${WHITE}Checking installation...${RESET}"
+echo ""
+
+if brew list --cask obsidian &>/dev/null 2>&1; then
+  echo -e "  ${GREEN}✓${RESET} Obsidian"
+else
+  echo -e "  ${ORANGE}✗${RESET} Obsidian — run: brew install --cask obsidian"
+fi
+
+if command -v claude &>/dev/null; then
+  echo -e "  ${GREEN}✓${RESET} Claude Code  $(claude --version 2>/dev/null | head -1)"
+else
+  echo -e "  ${ORANGE}✗${RESET} Claude Code not in PATH — restart terminal then run: claude"
+fi
+
+if command -v python3 &>/dev/null; then
+  echo -e "  ${GREEN}✓${RESET} $(python3 --version 2>&1)"
+else
+  echo -e "  ${ORANGE}✗${RESET} Python 3 not found — run: brew install python3"
+fi
+
+if [ -f "$VAULT_PATH/CLAUDE.md" ]; then
+  echo -e "  ${GREEN}✓${RESET} Vault  $VAULT_PATH"
+else
+  echo -e "  ${ORANGE}✗${RESET} Vault files missing at $VAULT_PATH"
+fi
+
 # ─── DONE ────────────────────────────────────────────────────────────────────
 echo ""
 echo -e "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

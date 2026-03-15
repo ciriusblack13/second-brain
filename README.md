@@ -69,6 +69,14 @@ The result: an AI that knows who you are from the first prompt of every session.
 
 ### macOS
 
+**Option A — One-liner** (paste this into Terminal and hit Enter):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/promptadvisers/second-brain/main/setup.sh -o setup.sh && bash setup.sh
+```
+
+**Option B — Clone the repo:**
+
 Open **Terminal** (press `⌘ Space`, type `Terminal`, hit Enter) and run:
 
 ```bash
@@ -89,6 +97,14 @@ cd second-brain
 > git --version
 > ```
 > If you see a version number, you're good. If not, install git from [git-scm.com](https://git-scm.com/download/win) — use all the default options during install, then reopen PowerShell.
+
+**Option A — One-liner** (paste this into PowerShell and hit Enter):
+
+```powershell
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/promptadvisers/second-brain/main/setup.ps1" -OutFile setup.ps1; powershell -ExecutionPolicy Bypass -File setup.ps1
+```
+
+**Option B — Clone the repo:**
 
 Once git is ready, run:
 
@@ -227,6 +243,7 @@ second-brain/
 ├── memory.md                             ← Session memory (auto-updated by Claude Code)
 ├── requirements.txt                      ← Python dependencies
 ├── .env.example                          ← Copy to .env, add your Google API key
+├── .gitignore                            ← Keeps .env and .venv out of git
 ├── scripts/
 │   ├── process_docs_to_obsidian.py      ← Gemini 3 Flash file synthesizer
 │   └── process_files_with_gemini.py     ← Batch Gemini file processor
@@ -282,7 +299,18 @@ cp second-brain/.env.example ~/second-brain/.env
 
 Open `~/second-brain/.env` in any text editor and replace `your_key_here` with your key from [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
 
-**6. Open Claude Code in your vault**
+**6. (Optional) Install Kepano's Obsidian Skills**
+```bash
+git clone --depth=1 https://github.com/kepano/obsidian-skills.git /tmp/obs-skills
+for d in /tmp/obs-skills/skills/*/; do
+  name=$(basename "$d")
+  mkdir -p ~/second-brain/.claude/skills/$name
+  cp "$d/SKILL.md" ~/second-brain/.claude/skills/$name/
+done
+rm -rf /tmp/obs-skills
+```
+
+**7. Open Claude Code in your vault**
 ```bash
 cd ~/second-brain && claude
 ```
@@ -331,7 +359,19 @@ pip install -r second-brain\requirements.txt
 
 Open `%USERPROFILE%\second-brain\.env` in Notepad and replace `your_key_here` with your key from [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
 
-**7. Open Claude Code in your vault**
+**7. (Optional) Install Kepano's Obsidian Skills**
+```powershell
+$tmp = "$env:TEMP\obs-skills"
+git clone --depth=1 https://github.com/kepano/obsidian-skills.git $tmp
+Get-ChildItem "$tmp\skills" -Directory | ForEach-Object {
+    $dest = "$env:USERPROFILE\second-brain\.claude\skills\$($_.Name)"
+    New-Item -ItemType Directory -Force -Path $dest | Out-Null
+    Copy-Item "$($_.FullName)\SKILL.md" "$dest\" -Force
+}
+Remove-Item $tmp -Recurse -Force
+```
+
+**8. Open Claude Code in your vault**
 ```powershell
 cd "$env:USERPROFILE\second-brain"
 claude
