@@ -39,6 +39,27 @@ echo -e "${DIM}  Obsidian + Claude Code · Your AI-powered second brain${RESET}"
 echo ""
 echo -e "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
+echo -e "  ${WHITE}What this script installs:${RESET}"
+echo ""
+echo -e "  ${PURPLE}Obsidian${RESET}              Free note-taking app. Notes live as plain text files"
+echo -e "                        on your computer — private, local, forever yours."
+echo ""
+echo -e "  ${PURPLE}Claude Code${RESET}           Anthropic's AI that runs in your terminal. Reads and"
+echo -e "                        writes your vault directly — no copy-pasting."
+echo ""
+echo -e "  ${PURPLE}Python packages${RESET}       Background libraries used by Gemini 3 Flash to read"
+echo -e "                        and synthesize your existing files (PDFs, docs, slides)."
+echo ""
+echo -e "  ${PURPLE}Vault skills${RESET}          Slash commands that teach Claude how to use your vault:"
+echo -e "                        /vault-setup  /daily  /tldr  /file-intel"
+echo ""
+echo -e "  ${PURPLE}Obsidian Skills${RESET}       Official skills by Kepano (Obsidian CEO) — lets Claude"
+echo -e "  ${DIM}(optional)${RESET}            navigate your vault using the Obsidian CLI."
+echo ""
+echo -e "  ${DIM}  Nothing is uploaded. Your vault stays on your machine.${RESET}"
+echo ""
+echo -e "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
 
 # ─── STEP 1: Check OS ───────────────────────────────────────────────────────
 if [[ "$OSTYPE" != "darwin"* ]]; then
@@ -47,7 +68,7 @@ if [[ "$OSTYPE" != "darwin"* ]]; then
   exit 1
 fi
 
-echo -e "${WHITE}Step 1/6 — Checking dependencies${RESET}"
+echo -e "${WHITE}Step 1/7 — Checking dependencies + Homebrew${RESET}"
 
 # ─── STEP 2: Homebrew ────────────────────────────────────────────────────────
 if ! command -v brew &>/dev/null; then
@@ -59,7 +80,7 @@ fi
 
 # ─── STEP 3: Obsidian ────────────────────────────────────────────────────────
 echo ""
-echo -e "${WHITE}Step 2/6 — Installing Obsidian${RESET}"
+echo -e "${WHITE}Step 2/7 — Installing Obsidian${RESET}"
 if ! brew list --cask obsidian &>/dev/null 2>&1; then
   echo "  Installing Obsidian..."
   brew install --cask obsidian
@@ -70,7 +91,7 @@ fi
 
 # ─── STEP 4: Claude Code ─────────────────────────────────────────────────────
 echo ""
-echo -e "${WHITE}Step 3/6 — Installing Claude Code CLI${RESET}"
+echo -e "${WHITE}Step 3/7 — Installing Claude Code CLI${RESET}"
 if ! command -v claude &>/dev/null; then
   echo "  Installing Claude Code..."
   curl -fsSL https://claude.ai/install.sh | sh
@@ -82,7 +103,7 @@ fi
 
 # ─── STEP 5: Python deps (venv to avoid PEP 668 on modern macOS) ─────────────
 echo ""
-echo -e "${WHITE}Step 4/6 — Installing Python dependencies${RESET}"
+echo -e "${WHITE}Step 4/7 — Installing Python dependencies${RESET}"
 if command -v python3 &>/dev/null; then
   python3 -m venv "$SCRIPT_DIR/.venv" 2>/dev/null || true
   "$SCRIPT_DIR/.venv/bin/pip" install -q -r "$SCRIPT_DIR/requirements.txt" \
@@ -94,7 +115,7 @@ fi
 
 # ─── STEP 6: Vault setup ─────────────────────────────────────────────────────
 echo ""
-echo -e "${WHITE}Step 5/6 — Setting up your vault${RESET}"
+echo -e "${WHITE}Step 5/7 — Setting up your vault${RESET}"
 echo ""
 echo -e "  Where should your second brain live?"
 echo -e "  ${DIM}Press Enter for default: ~/vault${RESET}"
@@ -138,7 +159,7 @@ fi
 
 # ─── STEP 8: Import existing files ───────────────────────────────────────────
 echo ""
-echo -e "${WHITE}Step 6/6 — Import existing files (optional)${RESET}"
+echo -e "${WHITE}Step 6/7 — Import existing files (optional)${RESET}"
 echo ""
 echo -e "  Do you have existing files to import? (PDFs, Word docs, slides)"
 echo -e "  ${DIM}Gemini 3 Flash will synthesize them into clean Markdown notes${RESET}"
@@ -155,6 +176,40 @@ if [ -n "$IMPORT_FOLDER" ] && [ -d "$IMPORT_FOLDER" ]; then
   echo -e "  ${DIM}Open Claude Code and say: \"Sort everything in inbox/ into the right folders\"${RESET}"
 elif [ -n "$IMPORT_FOLDER" ]; then
   echo -e "  ${ORANGE}⚠${RESET}  Folder not found: $IMPORT_FOLDER"
+fi
+
+# ─── STEP 7: Kepano Obsidian Skills (optional) ──────────────────────────────
+echo ""
+echo -e "${WHITE}Step 7/7 — Obsidian Skills by Kepano (optional)${RESET}"
+echo ""
+echo -e "  Kepano (Steph Ango) is the CEO of Obsidian. He published a set of"
+echo -e "  official agent skills that teach Claude Code to natively read, write,"
+echo -e "  and navigate your vault using the Obsidian CLI."
+echo ""
+echo -e "  Adds these slash commands to Claude Code:"
+echo -e "  ${DIM}  obsidian-cli · obsidian-markdown · obsidian-bases · json-canvas${RESET}"
+echo ""
+read -p "  Install Kepano's Obsidian skills? [Y/n]: " KEPANO_ANSWER
+KEPANO_ANSWER="${KEPANO_ANSWER:-Y}"
+
+if [[ "$KEPANO_ANSWER" =~ ^[Yy] ]]; then
+  echo "  Cloning obsidian-skills..."
+  TEMP_DIR=$(mktemp -d)
+  if git clone --depth=1 https://github.com/kepano/obsidian-skills.git "$TEMP_DIR/obsidian-skills" &>/dev/null; then
+    for skill_dir in "$TEMP_DIR/obsidian-skills/skills"/*/; do
+      skill_name=$(basename "$skill_dir")
+      mkdir -p "$VAULT_PATH/.claude/skills/$skill_name"
+      cp "$skill_dir/SKILL.md" "$VAULT_PATH/.claude/skills/$skill_name/SKILL.md" 2>/dev/null || true
+    done
+    rm -rf "$TEMP_DIR"
+    echo -e "  ${GREEN}✓${RESET} Kepano's Obsidian skills installed"
+  else
+    rm -rf "$TEMP_DIR"
+    echo -e "  ${ORANGE}⚠${RESET}  Couldn't reach GitHub. Install manually later:"
+    echo -e "  ${DIM}  https://github.com/kepano/obsidian-skills${RESET}"
+  fi
+else
+  echo -e "  ${DIM}  Skipped — install anytime: https://github.com/kepano/obsidian-skills${RESET}"
 fi
 
 # ─── DONE ────────────────────────────────────────────────────────────────────

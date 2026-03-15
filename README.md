@@ -51,23 +51,60 @@ The result: an AI that knows who you are from the first prompt of every session.
 
 ---
 
+## What Gets Installed
+
+| Tool | What it is | Why |
+|------|-----------|-----|
+| **Obsidian** | Free note-taking app | Your notes live as plain `.md` files on your computer — no cloud, no subscription, yours forever |
+| **Claude Code** | Anthropic's AI terminal | Reads and writes files directly in your vault — no copy-pasting, no switching tabs |
+| **Python packages** | Background libraries | Used by Gemini 3 Flash to read and synthesize your existing files (PDFs, docs, slides) |
+| **Vault skills** | Slash commands | `/vault-setup` `/daily` `/tldr` `/file-intel` — teach Claude how to work with your vault |
+| **Obsidian Skills** *(optional)* | Official skills by [Kepano](https://github.com/kepano) (Obsidian CEO) | Lets Claude navigate, read, and write your vault natively using the Obsidian CLI |
+
+> **Nothing is uploaded.** Your vault is a folder on your computer. Claude Code reads it locally. The only optional network call is Gemini file processing — and that's fully skippable.
+
+---
+
 ## Quick Start
 
-**macOS**
+### macOS
+
+Open **Terminal** (press `⌘ Space`, type `Terminal`, hit Enter) and run:
+
 ```bash
 git clone https://github.com/promptadvisers/second-brain.git
 cd second-brain
 ./setup.sh
 ```
 
-**Windows** (PowerShell)
+> **Don't have git?** Run `xcode-select --install` first, then retry.
+
+---
+
+### Windows
+
+> **First: do you have git?**
+> Open **PowerShell** (press `Win`, type `powershell`, hit Enter) and run:
+> ```powershell
+> git --version
+> ```
+> If you see a version number, you're good. If not, install git from [git-scm.com](https://git-scm.com/download/win) — use all the default options during install, then reopen PowerShell.
+
+Once git is ready, run:
+
 ```powershell
 git clone https://github.com/promptadvisers/second-brain.git
 cd second-brain
 powershell -ExecutionPolicy Bypass -File setup.ps1
 ```
 
-That's it. The script installs everything, creates your vault, and optionally imports your existing files.
+> **"Running scripts is disabled" error?** That's a Windows safety setting. The `-ExecutionPolicy Bypass` part in the command above overrides it just for this one script — it doesn't change anything permanent on your computer.
+
+> **Python not found warning?** Download Python from [python.org/downloads](https://python.org/downloads) — on the first screen of the installer, check **"Add Python to PATH"** before clicking Install. Then rerun the setup script.
+
+---
+
+The script handles the rest: installs Obsidian, installs Claude Code, creates your vault, and optionally imports your existing files.
 
 > Prefer to set things up manually? See [Manual Setup](#manual-setup) below.
 
@@ -76,12 +113,13 @@ That's it. The script installs everything, creates your vault, and optionally im
 ## What the Setup Script Does
 
 ```
-Step 1 — Install Obsidian         (via Homebrew / winget)
-Step 2 — Install Claude Code CLI  (official installer)
-Step 3 — Install Python deps      (Gemini Flash for file processing)
-Step 4 — Create your vault        (inbox, daily, projects, research, archive)
-Step 5 — Configure API key        (Google AI — free tier works fine)
+Step 1 — Check dependencies       (Homebrew on Mac / winget on Windows)
+Step 2 — Install Obsidian         (free, local note-taking app)
+Step 3 — Install Claude Code CLI  (Anthropic's AI terminal)
+Step 4 — Install Python packages  (for Gemini file processing)
+Step 5 — Create your vault        (inbox, daily, projects, research, archive + skills)
 Step 6 — Import existing files    (optional — Gemini reads and synthesizes them)
+Step 7 — Obsidian Skills          (optional — official skills by Kepano, Obsidian CEO)
          └─> Opens Obsidian pointed at your new vault
 ```
 
@@ -112,13 +150,14 @@ Claude Code will interview you about your role and work, then generate a persona
 
 ## Slash Commands
 
-Three commands come pre-installed. More get added as you use the system.
+Four commands come pre-installed. More get added as you use the system.
 
 | Command | What it does |
 |---------|-------------|
 | `/vault-setup` | Interviews you (role, projects, goals) and generates your personalized vault structure + CLAUDE.md + custom slash commands |
 | `/daily` | Starts your day — reads today's note or creates one, surfaces your top priorities, asks what you're working on |
 | `/tldr` | At the end of any session, saves a structured summary to the right folder in your vault automatically |
+| `/file-intel` | Point it at any folder — Gemini reads every file and generates Obsidian-ready summaries into your inbox |
 
 ---
 
@@ -182,17 +221,20 @@ Your vault is structured so Claude Code can find the right context for any task:
 
 ```
 second-brain/
-├── setup.sh                           ← macOS/Linux one-command setup
-├── setup.ps1                          ← Windows one-command setup
-├── CLAUDE.md                          ← Vault system file (personalized by /vault-setup)
-├── memory.md                          ← Session memory (auto-updated by Claude Code)
-├── .env.example                       ← Copy to .env, add your Google API key
+├── setup.sh                              ← macOS/Linux one-command setup
+├── setup.ps1                             ← Windows one-command setup
+├── CLAUDE.md                             ← Vault system file (personalized by /vault-setup)
+├── memory.md                             ← Session memory (auto-updated by Claude Code)
+├── requirements.txt                      ← Python dependencies
+├── .env.example                          ← Copy to .env, add your Google API key
 ├── scripts/
-│   └── process_docs_to_obsidian.py   ← Gemini 3 Flash file synthesizer
+│   ├── process_docs_to_obsidian.py      ← Gemini 3 Flash file synthesizer
+│   └── process_files_with_gemini.py     ← Batch Gemini file processor
 ├── skills/
-│   ├── vault-setup/SKILL.md          ← Interactive vault configurator
-│   ├── daily/SKILL.md                ← Daily standup command
-│   └── tldr/SKILL.md                 ← Session summary command
+│   ├── vault-setup/SKILL.md             ← Interactive vault configurator
+│   ├── daily/SKILL.md                   ← Daily standup command
+│   ├── tldr/SKILL.md                    ← Session summary command
+│   └── file-intel/SKILL.md              ← Process any folder via Gemini
 └── vault-template/
     ├── inbox/   daily/   projects/
     ├── research/   archive/
@@ -202,36 +244,97 @@ second-brain/
 
 ## Manual Setup
 
-Prefer to install each piece yourself:
+Prefer to install each piece yourself? Here's the full step-by-step for both platforms.
 
-**1. Install Obsidian**
+---
 
-| Platform | Command |
-|----------|---------|
-| macOS | `brew install --cask obsidian` |
-| Windows | `winget install Obsidian.Obsidian` |
-| Linux | [AppImage download](https://obsidian.md/download) |
+### macOS — Manual Steps
 
-**2. Enable the Obsidian CLI**
-`Settings → General → Enable Command Line Interface`
+**1. Install Homebrew** (macOS app installer — skip if you have it)
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+**2. Install Obsidian**
+```bash
+brew install --cask obsidian
+```
 
 **3. Install Claude Code**
+```bash
+curl -fsSL https://claude.ai/install.sh | sh
+```
 
-| Platform | Command |
-|----------|---------|
-| macOS / Linux | `curl -fsSL https://claude.ai/install.sh \| sh` |
-| Windows | `winget install Anthropic.ClaudeCode` |
-
-**4. Clone and set up manually**
+**4. Download and set up the vault**
 ```bash
 git clone https://github.com/promptadvisers/second-brain.git
-mkdir -p ~/second-brain/{inbox,daily,projects,research,archive,.claude/skills}
+mkdir -p ~/second-brain/{inbox,daily,projects,research,archive,.claude/skills/vault-setup,.claude/skills/daily,.claude/skills/tldr,.claude/skills/file-intel,scripts}
 cp second-brain/CLAUDE.md second-brain/memory.md ~/second-brain/
-cp -r second-brain/skills ~/second-brain/.claude/
-cp -r second-brain/scripts ~/second-brain/
+cp second-brain/skills/vault-setup/SKILL.md ~/second-brain/.claude/skills/vault-setup/
+cp second-brain/skills/daily/SKILL.md ~/second-brain/.claude/skills/daily/
+cp second-brain/skills/tldr/SKILL.md ~/second-brain/.claude/skills/tldr/
+cp second-brain/skills/file-intel/SKILL.md ~/second-brain/.claude/skills/file-intel/
+cp second-brain/scripts/* ~/second-brain/scripts/
 cp second-brain/.env.example ~/second-brain/.env
-# Add your Google API key to .env
+```
+
+**5. Add your Google API key**
+
+Open `~/second-brain/.env` in any text editor and replace `your_key_here` with your key from [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
+
+**6. Open Claude Code in your vault**
+```bash
 cd ~/second-brain && claude
+```
+
+---
+
+### Windows — Manual Steps
+
+Open **PowerShell** for all commands below.
+
+**1. Install Obsidian**
+```powershell
+winget install Obsidian.Obsidian
+```
+
+**2. Install Claude Code**
+```powershell
+winget install Anthropic.ClaudeCode
+```
+Close and reopen PowerShell after this step.
+
+**3. Install Python** (if you don't have it)
+
+Download from [python.org/downloads](https://python.org/downloads). On the installer's first screen, check **"Add Python to PATH"** before clicking Install.
+
+**4. Download and set up the vault**
+```powershell
+git clone https://github.com/promptadvisers/second-brain.git
+$vault = "$env:USERPROFILE\second-brain"
+New-Item -ItemType Directory -Force -Path "$vault\inbox","$vault\daily","$vault\projects","$vault\research","$vault\archive","$vault\scripts","$vault\.claude\skills\vault-setup","$vault\.claude\skills\daily","$vault\.claude\skills\tldr","$vault\.claude\skills\file-intel" | Out-Null
+Copy-Item "second-brain\CLAUDE.md","second-brain\memory.md" $vault
+Copy-Item "second-brain\skills\vault-setup\SKILL.md" "$vault\.claude\skills\vault-setup\"
+Copy-Item "second-brain\skills\daily\SKILL.md" "$vault\.claude\skills\daily\"
+Copy-Item "second-brain\skills\tldr\SKILL.md" "$vault\.claude\skills\tldr\"
+Copy-Item "second-brain\skills\file-intel\SKILL.md" "$vault\.claude\skills\file-intel\"
+Copy-Item "second-brain\scripts\*" "$vault\scripts\"
+Copy-Item "second-brain\.env.example" "$vault\.env"
+```
+
+**5. Install Python dependencies**
+```powershell
+pip install -r second-brain\requirements.txt
+```
+
+**6. Add your Google API key**
+
+Open `%USERPROFILE%\second-brain\.env` in Notepad and replace `your_key_here` with your key from [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
+
+**7. Open Claude Code in your vault**
+```powershell
+cd "$env:USERPROFILE\second-brain"
+claude
 ```
 
 ---
