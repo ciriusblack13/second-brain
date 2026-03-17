@@ -57,3 +57,9 @@ Voice message → Response processed
 
 ### 2026-03-17 23:48:21
 User: Ecco la key: AIzaSyBAvv35q7R9tTDL5LiRya-UhzBARpgIhDs → Response processed
+
+### 2026-03-17 23:51:12
+User: Ti do una api key di serpapi per il resercer ok? Almeno può fare le ricerche, ci pensi poi tu a conf... → Response processed
+
+### 2026-03-17 23:52:21
+User: 303838c20f0d77d363ff72ca1aa7647bbf8ad43188ce0cd1cd44064c1b882518 → Response processed
