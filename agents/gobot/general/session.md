@@ -48,3 +48,12 @@ User: Sei il ricercarore? → Response processed
 
 ### 2026-03-17 22:53:52
 User: Vorrei che quando parlo all’interno di ogni topic parlo direttamente con l’agente del reparto. È pos... → Response processed
+
+### 2026-03-17 23:46:42
+User: Oi → Response processed
+
+### 2026-03-17 23:47:15
+Voice message → Response processed
+
+### 2026-03-17 23:48:21
+User: Ecco la key: AIzaSyBAvv35q7R9tTDL5LiRya-UhzBARpgIhDs → Response processed
