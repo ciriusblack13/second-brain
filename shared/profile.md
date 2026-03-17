@@ -1,25 +1,39 @@
-# Profilo
+---
+updated: 2026-03-17
+---
+
+# Profilo — José
 
 ## Chi sono
 
-- **Nome:** José
+- **Nome:** José Antonio
+- **Nazionalità:** Angolano (nato in Angola), vive a Roma
 - **Timezone:** Europe/Rome (UTC+1/+2)
-- **Lingua:** Italiano (madrelingua portoghese, inglese OK per tech)
+- **Lingua:** Italiano (quotidiano), portoghese (madrelingua), inglese (tech)
+- **Compagna:** Chiara Gomes — aiuta con le proprietà di Sean (comunicazione clienti, pagamenti)
+- **Figlia:** Zoe (va al nido)
 
-## Lavoro
+## Lavoro attuale
 
-Property Manager a Roma per 3 clienti (Sean Santini, Amedeo Fatucci, Gregorio).
-
-## Obiettivi 2026
-
-1. Diventare un AI Engineer
-2. Indipendenza geografica
-3. Costruire app/siti/automazioni per cashflow online
-4. Creare reputazione in automazione processi aziendali
+**Property Manager a Roma** per 2 clienti principali:
+- **Sean Santini** — 15 proprietà (short-term rental). Chiara gestisce comunicazione e pagamenti.
+- **Amedeo Fatucci (Ame)** — proprietà incluso Pigneto. Madre Stefania supporto operativo.
+- **Gregorio** — proprietario Monastery/Panorama
 
 ## Stack tecnologico
 
-Claude/Claude Code, Notion, Google AI PRO, n8n, Make, Zapier
+- Claude Code (Opus), OpenClaw, GoBot (Panthera/Jiji)
+- TypeScript, React (~1 anno esperienza frontend)
+- n8n, Make, Notion
+- Rabbit R1 connesso a OpenClaw gateway
+- VPS1 (69.62.121.131) — GoBot/Panthera
+- VPS2 (187.124.22.190) — OpenClaw
+
+## Routine
+
+- Si sveglia presto (~7:20), inizia subito a lavorare
+- Preferisce design minimalista
+- Abbonamento OpenAI pagato da carta di un cliente
 
 ## Come comunicare
 
