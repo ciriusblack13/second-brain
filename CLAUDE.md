@@ -1,37 +1,34 @@
-# CLAUDE.md — My Second Brain
+# Second Brain — Vault Multi-Agente
 
-## Who I Am
-[Run /vault-setup to personalize this file. Claude Code will interview you
-and fill this in based on your role, projects, and goals.]
+Questo vault è la memoria persistente per José e i suoi agenti AI.
 
-## Vault Structure
+## Struttura
+
 ```
-inbox/      ← Drop any file here. Claude Code will sort it.
-daily/      ← Daily notes (YYYY-MM-DD.md)
-projects/   ← Active projects and briefs
-research/   ← Notes, synthesis, saved ideas
-archive/    ← Completed work. Never delete, just archive.
+me/          → Zona personale José (daily, projects, journal, inbox)
+shared/      → Leggibile da tutti gli agenti (profile, goals, contacts, knowledge)
+agents/      → Memoria per agente
+  gobot/     → Agenti GoBot (general, research, content, finance, strategy, critic, cto, coo)
+  nanoclaw/  → Agenti NanoClaw (futuro)
 ```
 
-## Context Loading Rules
-When starting the day:
-→ Read daily/[today's date].md if it exists
-→ Check inbox/ for any unprocessed files
+## Regole di accesso
 
-When working on a project:
-→ Read projects/[name]/ before starting
+- **GoBot agenti:** leggono `shared/` + `agents/gobot/{proprio-nome}/` + `agents/gobot/_shared/`. Scrivono SOLO nella propria cartella.
+- **GoBot General (orchestratore):** può leggere TUTTE le cartelle `agents/gobot/`.
+- **NanoClaw (futuro):** legge `shared/` + `agents/nanoclaw/`. Scrive solo in `agents/nanoclaw/`.
+- **José:** accede a tutto.
 
-When writing anything:
-→ Read recent notes first to calibrate voice and context
+## Convenzioni
 
-## How to Maintain This Vault
-- New files from outside → inbox/ first, sort later
-- Daily notes → daily/YYYY-MM-DD.md
-- Completed work → archive/ (never delete)
-- Update this file whenever your conventions change
+- Ogni agente mantiene un `session.md` con log delle ultime sessioni
+- I fatti permanenti vanno in `shared/knowledge/`
+- Gli obiettivi vanno in `shared/goals.md`
+- Il formato data è YYYY-MM-DD
+- I file markdown usano frontmatter YAML quando utile
 
-## Available Slash Commands
-- /vault-setup  — Personalize this vault for your role
-- /daily        — Start the day with vault context
-- /tldr         — Save a summary of this session to the vault
-- /file-intel   — Process any folder of files through Gemini, get Obsidian-ready summaries
+## Quando scrivi in questo vault
+
+1. Prima leggi il file esistente per non sovrascrivere
+2. Appendi, non sostituire (tranne goals.md che va aggiornato in-place)
+3. Aggiungi timestamp a ogni entry
