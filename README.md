@@ -89,11 +89,46 @@ powershell -ExecutionPolicy Bypass -File setup.ps1
 
 > **"Running scripts is disabled" error?** That's a Windows safety setting. The `-ExecutionPolicy Bypass` part in the command above overrides it just for this one script — it doesn't change anything permanent on your computer.
 
-> **Python not found warning?** Download Python from [python.org/downloads](https://python.org/downloads) — on the first screen of the installer, check **"Add Python to PATH"** before clicking Install. Then rerun the setup script.
+> **Errors about `Unexpected token '}'` or `Missing terminator`?** This was fixed — see [Windows Troubleshooting](#windows-troubleshooting) below.
+
+> **Python not found warning?** Download Python from [python.org/downloads](https://python.org/downloads) — on the first screen of the installer, check **"Add Python to PATH"** before clicking Install. Then close and reopen PowerShell, and rerun the setup script.
 
 ---
 
 The script handles the rest: installs Obsidian, installs Claude Code, creates your vault, and optionally imports your existing files.
+
+---
+
+## Already Have an Obsidian Vault?
+
+**The main thing you're getting:** 4 slash commands (`/vault-setup` `/daily` `/tldr` `/file-intel`) and a CLAUDE.md template that makes Claude Code understand your vault from session one. The script adds these without touching your existing notes.
+
+The setup script **fully supports existing vaults**. When you point it at a folder that already has content, it will:
+
+- **Add missing folders** (`inbox/`, `daily/`, `projects/`, etc.) without touching your existing folders
+- **Back up your existing CLAUDE.md** (if present) before installing the new template
+- **Install 4 slash commands** into `.claude/skills/` (vault + global `~/.claude/skills/`)
+- **Copy helper scripts** into `scripts/`
+- **Show you exactly what it will do** and ask for confirmation before changing anything
+- **Never touch** your existing notes, Obsidian plugins, themes, snippets, or `.obsidian/` settings
+
+```
+# macOS — point at your existing vault
+./setup.sh
+# When prompted: enter your existing vault path, e.g. ~/Documents/MyVault
+
+# Windows — same thing
+powershell -ExecutionPolicy Bypass -File setup.ps1
+# When prompted: enter your existing vault path, e.g. C:\Users\You\MyVault
+```
+
+After setup, open Claude Code in your vault and run `/vault-setup`. It will interview you and generate a personalized `CLAUDE.md` that fits your existing structure.
+
+> **Already have a CLAUDE.md?** The script backs it up as `CLAUDE.md.backup-YYYY-MM-DD-HHMMSS` before writing the new template. You can always restore it.
+>
+> **Want to undo everything?** Delete `.claude/skills/`, `scripts/`, `CLAUDE.md`, and `memory.md` from your vault. Your original notes are untouched. To remove global skills: delete `~/.claude/skills/` (Mac) or `%USERPROFILE%\.claude\skills\` (Windows).
+>
+> **This script is safe to re-run.** It detects your existing vault, backs up CLAUDE.md, and only adds what's missing.
 
 ---
 
@@ -140,6 +175,8 @@ Step 2 — Install Obsidian         (free, local note-taking app)
 Step 3 — Install Claude Code CLI  (Anthropic's AI terminal)
 Step 4 — Install Python packages  (for Gemini file processing)
 Step 5 — Create your vault        (inbox, daily, projects, research, archive + skills)
+         └─> Skills installed both locally AND globally (~/.claude/skills/)
+         └─> API key input is masked (hidden) for security
 Step 6 — Import existing files    (optional — Gemini reads and synthesizes them)
 Step 7 — Obsidian Skills          (optional — official skills by Kepano, Obsidian CEO)
          └─> Opens Obsidian pointed at your new vault
@@ -181,17 +218,9 @@ Four commands come pre-installed. More get added as you use the system.
 | `/tldr` | At the end of any session, saves a structured summary to the right folder in your vault automatically |
 | `/file-intel` | Point it at any folder — Gemini reads every file and generates Obsidian-ready summaries into your inbox |
 
-> **Important:** Slash commands only activate when Claude Code is opened from inside your vault folder. Always `cd` into your vault before running `claude`.
+> **Good news:** The setup script automatically installs skills both locally (in your vault) and globally (`~/.claude/skills/`), so slash commands work from any folder — not just inside the vault.
 >
-> ```bash
-> cd ~/second-brain   # Mac
-> cd $env:USERPROFILE\second-brain   # Windows
-> claude
-> ```
->
-> **Want them available everywhere?** Once inside Claude Code, just ask:
-> *"Make these slash commands global so they work in any folder"*
-> Claude Code will copy the skills to `~/.claude/skills/` for you.
+> If you set up manually without the script, `cd` into your vault before running `claude`, or ask Claude Code to *"Make these slash commands global so they work in any folder."*
 
 ---
 
@@ -307,7 +336,13 @@ brew install --cask obsidian
 curl -fsSL https://claude.ai/install.sh | sh
 ```
 
-**4. Download and set up the vault**
+**4. Install Python dependencies**
+```bash
+python3 -m venv ~/.second-brain-venv
+~/.second-brain-venv/bin/pip install -r second-brain/requirements.txt
+```
+
+**5. Download and set up the vault**
 ```bash
 git clone https://github.com/earlyaidopters/second-brain.git
 mkdir -p ~/second-brain/{inbox,daily,projects,research,archive,.claude/skills/vault-setup,.claude/skills/daily,.claude/skills/tldr,.claude/skills/file-intel,scripts}
@@ -318,13 +353,19 @@ cp second-brain/skills/tldr/SKILL.md ~/second-brain/.claude/skills/tldr/
 cp second-brain/skills/file-intel/SKILL.md ~/second-brain/.claude/skills/file-intel/
 cp second-brain/scripts/* ~/second-brain/scripts/
 cp second-brain/.env.example ~/second-brain/.env
+# Also install skills globally (so they work in any folder):
+mkdir -p ~/.claude/skills/{vault-setup,daily,tldr,file-intel}
+cp second-brain/skills/vault-setup/SKILL.md ~/.claude/skills/vault-setup/
+cp second-brain/skills/daily/SKILL.md ~/.claude/skills/daily/
+cp second-brain/skills/tldr/SKILL.md ~/.claude/skills/tldr/
+cp second-brain/skills/file-intel/SKILL.md ~/.claude/skills/file-intel/
 ```
 
-**5. Add your Google API key**
+**6. Add your Google API key**
 
 Open `~/second-brain/.env` in any text editor and replace `your_key_here` with your key from [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
 
-**6. (Optional) Install Kepano's Obsidian Skills**
+**7. (Optional) Install Kepano's Obsidian Skills**
 ```bash
 git clone --depth=1 https://github.com/kepano/obsidian-skills.git /tmp/obs-skills
 for d in /tmp/obs-skills/skills/*/; do
@@ -335,7 +376,7 @@ done
 rm -rf /tmp/obs-skills
 ```
 
-**7. Open Claude Code in your vault**
+**8. Open Claude Code in your vault**
 ```bash
 cd ~/second-brain && claude
 ```
@@ -373,6 +414,13 @@ Copy-Item "second-brain\skills\tldr\SKILL.md" "$vault\.claude\skills\tldr\"
 Copy-Item "second-brain\skills\file-intel\SKILL.md" "$vault\.claude\skills\file-intel\"
 Copy-Item "second-brain\scripts\*" "$vault\scripts\"
 Copy-Item "second-brain\.env.example" "$vault\.env"
+# Also install skills globally (so they work in any folder):
+$global = "$env:USERPROFILE\.claude\skills"
+New-Item -ItemType Directory -Force -Path "$global\vault-setup","$global\daily","$global\tldr","$global\file-intel" | Out-Null
+Copy-Item "second-brain\skills\vault-setup\SKILL.md" "$global\vault-setup\"
+Copy-Item "second-brain\skills\daily\SKILL.md" "$global\daily\"
+Copy-Item "second-brain\skills\tldr\SKILL.md" "$global\tldr\"
+Copy-Item "second-brain\skills\file-intel\SKILL.md" "$global\file-intel\"
 ```
 
 **5. Install Python dependencies**
@@ -406,6 +454,121 @@ claude
 
 ---
 
+## Important Warnings
+
+### Obsidian Sync / Cloud Sync Users
+
+If you use **Obsidian Sync**, **iCloud**, **OneDrive**, **Dropbox**, or any other cloud sync with your vault, you **MUST** exclude these folders from sync:
+
+| Exclude from sync | Why |
+|---|---|
+| `.claude/` | Contains Claude Code's skills, logs, and internal state. Syncing this can create a **recursive feedback loop** where Claude reads its own logs as vault content, causing massive file bloat and corrupted context. |
+| `scripts/` | Python scripts that don't need to sync across devices |
+| `.env` | Contains your API key — never sync credentials |
+
+**How to exclude in Obsidian Sync:**
+```
+Obsidian → Settings → Sync → Excluded folders → Add: .claude, scripts
+```
+
+**How to exclude in iCloud/OneDrive/Dropbox:**
+Add a `.nosync` file or move the folders to your sync tool's ignore list.
+
+> **Real-world horror story:** One community member synced their vault with their global `.claude` folder. It created a recursive loop where Claude replicated everything within that folder back into itself — corrupting the vault so badly it was unusable for three months. **Keep your Obsidian vault and Claude configuration folders completely separate.**
+
+### Vault vs Global Claude Config
+
+These are two different things:
+
+| Path | What it is | Should Obsidian see it? |
+|---|---|---|
+| `~/second-brain/` (or wherever your vault is) | Your Obsidian vault + Second Brain | Yes — this is your vault |
+| `~/.claude/` (or `%USERPROFILE%\.claude`) | Claude Code's global config, skills, memory | **No** — never point Obsidian or any sync tool here |
+
+---
+
+## Windows Troubleshooting
+
+<details>
+<summary><strong>Errors like "Unexpected token '}'" or "Missing terminator"</strong></summary>
+
+This was a known issue with an earlier version of `setup.ps1` that used PowerShell 7+ syntax. Windows ships with PowerShell 5.1 by default, which doesn't support certain escape codes. The latest version is fully compatible with PowerShell 5.1+.
+
+**The script is safe to re-run.** Any steps that already completed (Obsidian installed, etc.) will be detected and skipped. Your existing vault files won't be touched.
+
+**Check your PowerShell version** (optional):
+```powershell
+$PSVersionTable.PSVersion
+```
+
+**If you used the one-liner** (most common), download the fixed script:
+```powershell
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/earlyaidopters/second-brain/main/setup.ps1" -OutFile setup.ps1
+powershell -ExecutionPolicy Bypass -File setup.ps1
+```
+> This downloads the updated script — it replaces the broken one you downloaded before.
+
+**If you cloned the repo**, pull the latest and re-run:
+```powershell
+cd second-brain
+git pull
+powershell -ExecutionPolicy Bypass -File setup.ps1
+```
+
+After running, you should see `Step 1/7 -- Checking winget` with no errors. If you see that, the fix worked.
+
+</details>
+
+<details>
+<summary><strong>Python not found / pip not found</strong></summary>
+
+Windows can report Python as "installed" when only the **Python Install Manager** (`py.exe`) exists — which is just a launcher, not Python itself.
+
+**How to fix:**
+1. Download Python from [python.org/downloads](https://python.org/downloads)
+2. On the **very first screen** of the installer, check **"Add Python to PATH"**
+3. Complete the install
+4. **Close and reopen PowerShell** (required for PATH changes to take effect)
+5. Re-run the setup script
+
+> **WSL gotcha:** If Python is installed inside WSL (Windows Subsystem for Linux) but not as a native Windows app, PowerShell can't use it. You need native Windows Python.
+
+> **py.exe shortcut:** If you have the Python Install Manager, you can run `py install 3.13` to install Python 3.13 through it. But if `py` isn't recognized either, go the python.org route.
+
+</details>
+
+<details>
+<summary><strong>'claude' is not recognized after installing Claude Code</strong></summary>
+
+After `winget install Anthropic.ClaudeCode`, the `claude` command won't be available in your current terminal session.
+
+**Fix:** Close PowerShell completely and open a new window. The PATH update only takes effect in new sessions.
+
+</details>
+
+<details>
+<summary><strong>Script downloaded to wrong location</strong></summary>
+
+The one-liner downloads `setup.ps1` to whatever folder PowerShell is currently in. If you get errors about missing files:
+
+```powershell
+# Check where you are
+Get-Location
+
+# Option 1: clone the repo properly
+git clone https://github.com/earlyaidopters/second-brain.git
+cd second-brain
+powershell -ExecutionPolicy Bypass -File setup.ps1
+
+# Option 2: run from the folder where setup.ps1 was downloaded
+cd C:\Users\YourName\wherever-you-downloaded-it
+powershell -ExecutionPolicy Bypass -File setup.ps1
+```
+
+</details>
+
+---
+
 ## FAQ
 
 **Is my data private?**
@@ -415,10 +578,19 @@ Yes. Obsidian stores everything as local markdown files on your computer. Nothin
 The free tier works for light use. For daily use with long sessions, Claude Pro ($20/month) gives substantially more usage than equivalent API costs in other tools.
 
 **What if I already have an Obsidian vault?**
-The setup script asks where your vault is. Point it at your existing vault — it'll copy the CLAUDE.md template, skills, and scripts into it without touching your existing notes.
+Fully supported. See [Already Have an Obsidian Vault?](#already-have-an-obsidian-vault) above. The script detects your existing vault, asks for confirmation, backs up your `CLAUDE.md` if present, and only adds the Second Brain components (skills, scripts, folder structure) without touching your existing notes, plugins, or themes.
 
 **Can I use this without the file processing?**
 Absolutely. The Gemini API key and file processing are optional. The core system (Obsidian + Claude Code + CLAUDE.md + slash commands) works without it.
+
+**I use Obsidian Sync / iCloud / OneDrive — is that safe?**
+Yes, but you **must** exclude `.claude/`, `scripts/`, and `.env` from sync. See [Important Warnings](#important-warnings) above. Syncing the `.claude/` folder can create a recursive loop that corrupts your vault.
+
+**I'm on Windows and get parsing errors when running the script**
+This was a known issue with an earlier version. Pull the latest script (`git pull`) or download it fresh. See [Windows Troubleshooting](#windows-troubleshooting) for details.
+
+**Can I use this from WSL?**
+Yes. After setting up the vault on Windows, access it from WSL at `/mnt/c/Users/YOUR_WINDOWS_USERNAME/second-brain`. Obsidian (Windows app) and Claude Code (WSL) work on the same files — no sync needed.
 
 ---
 
